@@ -6,6 +6,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { StyleSheet } from "react-native";
 import { ThemeContext } from "./context/ThemeContext";
 import Icon from "react-native-vector-icons/Ionicons"; // Importing Ionicons for tab icons
+import { StatusBar } from "react-native";
 
 import MangaListScreen from "./components/MangaListScreen";
 import MangaDetailsScreen from "./components/MangaDetailsScreen";
@@ -73,23 +74,27 @@ const BottomTabNavigator = () => {
 };
 
 const App = () => (
-	<ThemeProvider>
-		<NavigationContainer>
-			<Stack.Navigator
-				screenOptions={{
-					headerShown: false, // Hide the header by default
-				}}
-			>
-				<Stack.Screen name="Tabs" component={BottomTabNavigator} />
-				<Stack.Screen name="MangaDetails" component={MangaDetailsScreen} />
-				<Stack.Screen name="Settings" component={SettingsScreen} />
-				<Stack.Screen name="ChapterScreen" component={ChapterScreen} />
-				<Stack.Screen name="Search" component={SearchScreen} />
-				<Stack.Screen name="Favs" component={FavoritesScreen} />
-				<Stack.Screen name="Explore" component={ExploreScreen} />
-			</Stack.Navigator>
-		</NavigationContainer>
-	</ThemeProvider>
+	<>
+		<StatusBar hidden />
+
+		<ThemeProvider>
+			<NavigationContainer>
+				<Stack.Navigator
+					screenOptions={{
+						headerShown: false, // Hide the header by default
+					}}
+				>
+					<Stack.Screen name="Tabs" component={BottomTabNavigator} />
+					<Stack.Screen name="MangaDetails" component={MangaDetailsScreen} />
+					<Stack.Screen name="Settings" component={SettingsScreen} />
+					<Stack.Screen name="ChapterScreen" component={ChapterScreen} />
+					<Stack.Screen name="Search" component={SearchScreen} />
+					<Stack.Screen name="Favs" component={FavoritesScreen} />
+					<Stack.Screen name="Explore" component={ExploreScreen} />
+				</Stack.Navigator>
+			</NavigationContainer>
+		</ThemeProvider>
+	</>
 );
 
 export default App;

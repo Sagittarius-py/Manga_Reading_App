@@ -8,7 +8,7 @@ const themes = {
 		text: "#18181b",
 		text2: "#282828",
 		header: "#e0e0e0",
-		cardBackground: "",
+		cardBackground: "#f0f0f0",
 	},
 	dark: {
 		background: "#27272A",

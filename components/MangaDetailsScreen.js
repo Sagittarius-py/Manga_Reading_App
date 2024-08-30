@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import axios from "axios";
 import {
+	ScrollView,
 	View,
 	Text,
 	Image,
@@ -19,6 +20,7 @@ import {
 import { ThemeContext } from "../context/ThemeContext";
 
 const MangaDetailsScreen = () => {
+	const scrollRef = useRef();
 	const { theme, colors, currentTheme } = useContext(ThemeContext);
 	const navigation = useNavigation();
 	const route = useRoute();
@@ -32,6 +34,7 @@ const MangaDetailsScreen = () => {
 	const styles = StyleSheet.create({
 		container: {
 			backgroundColor: currentTheme.background,
+			padding: 10,
 		},
 		coverImage: {
 			width: "100%",
@@ -102,19 +105,57 @@ const MangaDetailsScreen = () => {
 			color: "#fff",
 			fontSize: 16,
 		},
+		navGroup: {
+			marginVertical: 10,
+			flexDirection: "row",
+			justifyContent: "space-evenly",
+			alignItems: "center",
+		},
+		navButton: {
+			height: 40,
+			backgroundColor: colors.accent,
+			padding: 4,
+			paddingHorizontal: 8,
+			borderRadius: 4,
+			flexDirection: "row",
+			justifyContent: "center",
+			alignItems: "center",
+		},
+		navButtonText: {
+			fontSize: 16,
+			color: currentTheme.text,
+		},
+		navPage: {
+			backgroundColor: currentTheme.bars,
+			fontSize: 20,
+			color: currentTheme.text,
+			padding: 4,
+			paddingHorizontal: 14,
+			borderRadius: 4,
+		},
 	});
 
-	const fetchMangaData = async () => {
-		if (!hasMore) return;
+	const scrollToTop = () => {
+		scrollRef.current.scrollToOffset({ animated: true, offset: 0 });
+	};
 
+	const loadLessChapters = () => {
+		setPage((prevPage) => prevPage - 1);
+	};
+
+	const loadMoreChapters = () => {
+		setPage((prevPage) => prevPage + 1);
+	};
+
+	const fetchMangaData = async () => {
 		try {
 			const response = await axios.get(
 				`https://api.mangadex.org/manga/${manga.id}/feed`,
 				{
 					params: {
 						translatedLanguage: ["en", "pl"],
-						limit: 100,
-						offset: (page - 1) * 100,
+						limit: 40,
+						offset: (page - 1) * 40,
 						order: { chapter: "asc" },
 					},
 				}
@@ -122,16 +163,16 @@ const MangaDetailsScreen = () => {
 
 			// Filter out chapters not hosted on MangaDex
 			const filteredChapters = response.data.data.filter(
-				(chapter) => chapter.attributes.pages > 0
+				(chapter) => chapter.attributes.pages >= 0
 			);
 
-			setChapterList((prevChapters) => [...prevChapters, ...filteredChapters]);
+			setChapterList(filteredChapters);
 
-			// If fewer than 100 chapters were returned, no more pages are available
-			if (filteredChapters.length < 100) {
+			// If fewer than 20 chapters were returned, no more pages are available
+			if (filteredChapters.length < 40) {
 				setHasMore(false);
 			} else {
-				setPage((prevPage) => prevPage + 1);
+				setHasMore(true);
 			}
 		} catch (error) {
 			console.error("Error fetching manga data:", error);
@@ -141,7 +182,7 @@ const MangaDetailsScreen = () => {
 	useEffect(() => {
 		fetchMangaData();
 		checkIfFavorite();
-	}, []);
+	}, [page]);
 
 	const checkIfFavorite = async () => {
 		const favorite = await isFavorite(manga.id);
@@ -175,6 +216,7 @@ const MangaDetailsScreen = () => {
 			<Text style={styles.chapterDate}>
 				Published: {new Date(item.attributes.publishAt).toDateString()}
 			</Text>
+			<Text style={styles.year}>Pages: {item.attributes.pages}</Text>
 		</TouchableOpacity>
 	);
 
@@ -183,6 +225,7 @@ const MangaDetailsScreen = () => {
 			<Image source={{ uri: coverArtUri }} style={styles.coverImage} />
 			<Text style={styles.title}>{manga.attributes.title.en}</Text>
 			<Text style={styles.description}>{manga.attributes.description.en}</Text>
+
 			<Text style={styles.year}>Year: {manga.attributes.year}</Text>
 			<Text style={styles.status}>
 				Status:{" "}
@@ -198,24 +241,42 @@ const MangaDetailsScreen = () => {
 		</View>
 	);
 
-	const renderFooter = () => {
-		if (!hasMore) return null;
-
-		return (
-			<TouchableOpacity style={styles.loadMoreButton} onPress={fetchMangaData}>
-				<Text style={styles.loadMoreText}>Load More Chapters</Text>
+	const renderFooter = () => (
+		<View style={styles.navGroup}>
+			<TouchableOpacity
+				style={styles.navButton}
+				onPress={() => {
+					loadLessChapters();
+					scrollToTop();
+				}}
+				disabled={page <= 1}
+			>
+				<Text style={styles.navButtonText}>Prev Page</Text>
 			</TouchableOpacity>
-		);
-	};
+			<Text style={styles.navPage}>{page}</Text>
+			<TouchableOpacity
+				style={styles.navButton}
+				onPress={() => {
+					loadMoreChapters();
+					scrollToTop();
+				}}
+				disabled={!hasMore}
+			>
+				<Text style={styles.navButtonText}>Next Page</Text>
+			</TouchableOpacity>
+		</View>
+	);
 
 	return (
 		<FlatList
+			ref={scrollRef}
 			data={chapterList}
 			ListHeaderComponent={ListHeaderComponent}
 			ListFooterComponent={renderFooter}
 			renderItem={renderItem}
 			keyExtractor={(item) => item.id}
 			contentContainerStyle={styles.container}
+			onEndReachedThreshold={0.1}
 		/>
 	);
 };

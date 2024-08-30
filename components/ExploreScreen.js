@@ -14,29 +14,43 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext";
+import Icon from "react-native-vector-icons/Ionicons";
 
 const ExploreScreen = ({ navigation }) => {
-	const { theme, colors, currentTheme } = useContext(ThemeContext);
+	const { theme, colors, currentTheme, adultContentEnabled } =
+		useContext(ThemeContext);
 	const [tags, setTags] = useState([]);
 	const [selectedTags, setSelectedTags] = useState([]);
 	const [mangaList, setMangaList] = useState([]);
 	const [sortOption, setSortOption] = useState("rating");
-	const [modalVisible, setModalVisible] = useState(false);
+
+	const [sortOrder, setSortOrder] = useState(false);
 	const [searchText, setSearchText] = useState("");
 	const [showTags, setShowTags] = useState(false);
 	const [offset, setOffset] = useState(0);
 
-	const limit = 32; // Number of manga per page
+	const limit = 33; // Number of manga per page
 
 	const styles = StyleSheet.create({
+		button: {
+			backgroundColor: colors.accent,
+			color: colors.accent,
+		},
 		container: {
 			flex: 1,
 			backgroundColor: currentTheme.background,
 			padding: 16,
 		},
 		tagGroup: {
-			marginVertical: 10,
+			padding: 4,
+			borderRightWidth: 1,
+			borderRightColor: colors.accent,
 		},
+		tagGroup2: {
+			marginVertical: 10,
+			flexDirection: "row",
+		},
+
 		tagGroupTitle: {
 			fontSize: 18,
 			color: currentTheme.text,
@@ -46,7 +60,7 @@ const ExploreScreen = ({ navigation }) => {
 			padding: 10,
 			margin: 5,
 			borderRadius: 8,
-			backgroundColor: currentTheme.bars,
+			backgroundColor: currentTheme.cardBackground,
 			flex: 1,
 			alignItems: "center",
 		},
@@ -81,30 +95,61 @@ const ExploreScreen = ({ navigation }) => {
 			elevation: 2,
 			backgroundColor: colors.accent,
 			marginVertical: 10,
+			flexDirection: "row",
+			justifyContent: "center",
 		},
 		buttonText: {
 			fontSize: 16,
 			color: currentTheme.text,
 		},
 		itemContainer: {
-			flexDirection: "row",
-			marginVertical: 10,
-			backgroundColor: colors.accent,
+			flexDirection: "column",
+			margin: 5,
+			backgroundColor: currentTheme.cardBackground,
 			borderRadius: 8,
 			overflow: "hidden",
+			width: "30%",
 		},
 		coverImage: {
-			width: 100,
+			width: "100%",
 			height: 150,
 		},
 		textContainer: {
-			flex: 1,
 			padding: 10,
 			justifyContent: "center",
+			alignItems: "center",
 		},
 		title: {
-			fontSize: 18,
+			fontSize: 14,
 			color: currentTheme.text,
+			textAlign: "center",
+		},
+
+		navGroup: {
+			marginVertical: 10,
+			flexDirection: "row",
+			justifyContent: "space-evenly",
+			alignItems: "center",
+		},
+		navButton: {
+			height: 40,
+			backgroundColor: colors.accent,
+			padding: 4,
+			paddingHorizontal: 8,
+			borderRadius: 4,
+			marginBottom: 0,
+		},
+		navButtonText: {
+			fontSize: 20,
+			color: currentTheme.text,
+		},
+		navPage: {
+			backgroundColor: currentTheme.bars,
+			fontSize: 20,
+			color: currentTheme.text,
+			padding: 4,
+			paddingHorizontal: 14,
+			borderRadius: 4,
 		},
 	});
 
@@ -137,7 +182,13 @@ const ExploreScreen = ({ navigation }) => {
 				const includedTags = selectedTags
 					.map((tag) => `includedTags[]=${tag}`)
 					.join("&");
-				const url = `https://api.mangadex.org/manga?limit=${limit}&offset=${offset}&includes[]=cover_art&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&${includedTags}&includedTagsMode=AND&excludedTagsMode=OR`;
+				const url = `https://api.mangadex.org/manga?limit=${limit}&offset=${offset}&includes[]=cover_art${
+					!adultContentEnabled
+						? "&contentRating[]=safe&contentRating[]=suggestive"
+						: "&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica"
+				}&order[${sortOption}]=${
+					sortOrder ? "asc" : "desc"
+				}&${includedTags}&includedTagsMode=AND&excludedTagsMode=OR`;
 				console.log("Fetching manga with URL:", url);
 
 				const response = await axios.get(url);
@@ -151,7 +202,7 @@ const ExploreScreen = ({ navigation }) => {
 		};
 
 		fetchManga();
-	}, [selectedTags, sortOption, offset]);
+	}, [selectedTags, sortOption, sortOrder, offset]);
 
 	const toggleTagSelection = (tagId) => {
 		setSelectedTags((prevTags) =>
@@ -198,6 +249,10 @@ const ExploreScreen = ({ navigation }) => {
 		setOffset((prevOffset) => prevOffset + limit);
 	};
 
+	const loadLessManga = () => {
+		if (offset - limit >= 0) setOffset((prevOffset) => prevOffset - limit);
+	};
+
 	const renderMangaItem = ({ item }) => {
 		// Fetch cover image URL
 		const coverArt = item.relationships.find((rel) => rel.type === "cover_art");
@@ -224,50 +279,82 @@ const ExploreScreen = ({ navigation }) => {
 
 	return (
 		<View style={styles.container}>
-			<StatusBar barStyle="dark-content" />
+			<StatusBar barStyle="dark-content" style={styles.button} />
 
-			<Button
-				title={showTags ? "Hide Tags" : "Show Tags"}
+			<TouchableOpacity
+				style={styles.button}
 				onPress={() => setShowTags(!showTags)}
-			/>
+			>
+				<Text style={styles.navButtonText}>
+					{showTags ? "Hide Tags" : "Show Tags"}
+				</Text>
+			</TouchableOpacity>
 
-			{showTags && <ScrollView>{renderTagGroups()}</ScrollView>}
+			{showTags && (
+				<ScrollView horizontal>
+					<View style={styles.tagGroup}>
+						<Text numberOfLines={1} style={styles.tagGroupTitle}>
+							Sort
+						</Text>
+						<View style={styles.tagGroup2}>
+							<Picker
+								selectedValue={sortOption}
+								style={{
+									height: 30,
+									width: 150,
+									backgroundColor: currentTheme.bars,
+									color: currentTheme.text,
+									borderRadius: 8,
+								}}
+								onValueChange={(itemValue) => setSortOption(itemValue)}
+							>
+								<Picker.Item label="Rating" value="rating" />
+								<Picker.Item label="Follows count" value="followedCount" />
+								<Picker.Item
+									label="New Chapters"
+									value="latestUploadedChapter"
+								/>
 
-			<Button title="Sort Options" onPress={() => setModalVisible(true)} />
+								{/* Add more sort options as needed */}
+							</Picker>
+
+							<Icon
+								name={sortOrder ? "arrow-down" : "arrow-up"}
+								size={50}
+								color={colors.accent}
+								onPress={() => setSortOrder(!sortOrder)}
+							/>
+						</View>
+					</View>
+
+					{renderTagGroups()}
+				</ScrollView>
+			)}
 
 			<FlatList
 				data={mangaList}
 				renderItem={renderMangaItem}
 				keyExtractor={(item) => item.id}
-				onEndReached={loadMoreManga}
+				numColumns={3} // Change here to use three columns
 				onEndReachedThreshold={0.5}
+				columnWrapperStyle={{ justifyContent: "space-between" }} // Add spacing between columns
 			/>
 
-			<Modal
-				animationType="slide"
-				transparent={true}
-				visible={modalVisible}
-				onRequestClose={() => setModalVisible(false)}
-			>
-				<View style={styles.modalView}>
-					<Text style={styles.buttonText}>Sort by</Text>
-					<Picker
-						selectedValue={sortOption}
-						style={{ height: 50, width: 150 }}
-						onValueChange={(itemValue) => setSortOption(itemValue)}
-					>
-						<Picker.Item label="Rating" value="rating" />
-						<Picker.Item label="Latest" value="createdAt" />
-						{/* Add more sort options as needed */}
-					</Picker>
-					<TouchableOpacity
-						style={styles.button}
-						onPress={() => setModalVisible(false)}
-					>
-						<Text style={styles.buttonText}>Close</Text>
-					</TouchableOpacity>
-				</View>
-			</Modal>
+			<View style={styles.navGroup}>
+				<TouchableOpacity
+					style={styles.navButton}
+					onPress={() => loadLessManga()}
+				>
+					<Text style={styles.navButtonText}>Prev Page</Text>
+				</TouchableOpacity>
+				<Text style={styles.navPage}>{offset / 33 + 1}</Text>
+				<TouchableOpacity
+					style={styles.navButton}
+					onPress={() => loadMoreManga()}
+				>
+					<Text style={styles.navButtonText}>Prev Page</Text>
+				</TouchableOpacity>
+			</View>
 		</View>
 	);
 };
