@@ -13,6 +13,7 @@ import SettingsScreen from "./components/SettingsScreen";
 import ChapterScreen from "./components/ChapterScreen";
 import SearchScreen from "./components/SearchScreen";
 import FavoritesScreen from "./components/FavoritesScreen";
+import ExploreScreen from "./components/ExploreScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -49,6 +50,8 @@ const BottomTabNavigator = () => {
 						iconName = focused ? "settings" : "settings-outline";
 					} else if (route.name === "Search") {
 						iconName = focused ? "search" : "search-outline";
+					} else if (route.name === "Explore") {
+						iconName = focused ? "compass" : "compass-outline";
 					}
 
 					return <Icon name={iconName} size={size} color={color} />;
@@ -60,6 +63,7 @@ const BottomTabNavigator = () => {
 				initialRouteName: "Home",
 			})}
 		>
+			<Tab.Screen name="Explore" component={ExploreScreen} />
 			<Tab.Screen name="Favs" component={FavoritesScreen} />
 			<Tab.Screen name="Home" component={MangaListScreen} />
 			<Tab.Screen name="Search" component={SearchScreen} />
@@ -82,6 +86,7 @@ const App = () => (
 				<Stack.Screen name="ChapterScreen" component={ChapterScreen} />
 				<Stack.Screen name="Search" component={SearchScreen} />
 				<Stack.Screen name="Favs" component={FavoritesScreen} />
+				<Stack.Screen name="Explore" component={ExploreScreen} />
 			</Stack.Navigator>
 		</NavigationContainer>
 	</ThemeProvider>

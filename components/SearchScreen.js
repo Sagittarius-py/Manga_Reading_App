@@ -70,7 +70,7 @@ const SearchScreen = () => {
 				)}&limit=10&includes[]=cover_art${
 					!adultContentEnabled
 						? "&contentRating[]=safe&contentRating[]=suggestive"
-						: ""
+						: "&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica"
 				}`
 			);
 			setSearchResults(response.data.data);

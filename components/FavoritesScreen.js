@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
 	View,
 	Text,
@@ -9,10 +9,60 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { getFavorites } from "../utils/favoritesStorage";
+import { ThemeContext } from "../context/ThemeContext";
 
 const FavoritesScreen = () => {
+	const { colors, currentTheme } = useContext(ThemeContext);
 	const [favorites, setFavorites] = useState([]);
 	const navigation = useNavigation();
+
+	const styles = StyleSheet.create({
+		container: {
+			flex: 1,
+			backgroundColor: currentTheme.background,
+			padding: 10,
+		},
+		header: {
+			fontSize: 24,
+			fontWeight: "bold",
+			marginBottom: 20,
+			color: currentTheme.text,
+		},
+		emptyText: {
+			fontSize: 18,
+			color: "#666",
+			textAlign: "center",
+			marginTop: 50,
+		},
+		listContainer: {
+			paddingBottom: 20,
+		},
+		mangaItem: {
+			flexDirection: "row",
+			marginBottom: 15,
+			backgroundColor: currentTheme.cardBackground,
+			borderRadius: 5,
+			overflow: "hidden",
+		},
+		coverImage: {
+			width: 100,
+			height: 150,
+		},
+		detailsContainer: {
+			flex: 1,
+			padding: 10,
+		},
+		title: {
+			fontSize: 18,
+			fontWeight: "bold",
+			marginBottom: 5,
+			color: currentTheme.text,
+		},
+		description: {
+			fontSize: 14,
+			color: currentTheme.text2,
+		},
+	});
 
 	useEffect(() => {
 		const loadFavorites = async () => {
@@ -62,51 +112,5 @@ const FavoritesScreen = () => {
 		</View>
 	);
 };
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#fff",
-		padding: 10,
-	},
-	header: {
-		fontSize: 24,
-		fontWeight: "bold",
-		marginBottom: 20,
-	},
-	emptyText: {
-		fontSize: 18,
-		color: "#666",
-		textAlign: "center",
-		marginTop: 50,
-	},
-	listContainer: {
-		paddingBottom: 20,
-	},
-	mangaItem: {
-		flexDirection: "row",
-		marginBottom: 15,
-		backgroundColor: "#f8f8f8",
-		borderRadius: 5,
-		overflow: "hidden",
-	},
-	coverImage: {
-		width: 100,
-		height: 150,
-	},
-	detailsContainer: {
-		flex: 1,
-		padding: 10,
-	},
-	title: {
-		fontSize: 18,
-		fontWeight: "bold",
-		marginBottom: 5,
-	},
-	description: {
-		fontSize: 14,
-		color: "#666",
-	},
-});
 
 export default FavoritesScreen;
