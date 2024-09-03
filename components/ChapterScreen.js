@@ -57,9 +57,9 @@ const ChapterScreen = () => {
 
 	const renderItem = ({ item, index }) => {
 		const imageStyle = {
-			width: windowWidth,
+			width: "100%",
 			marginTop: 10,
-			height: item.height ? item.height : windowWidth, // Dynamically adjust height
+			height: windowWidth * (item.height / item.width) || windowWidth, // Dynamically adjust height
 		};
 
 		return (

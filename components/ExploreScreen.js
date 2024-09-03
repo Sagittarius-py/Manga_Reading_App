@@ -190,7 +190,6 @@ const ExploreScreen = ({ navigation }) => {
 				}&order[${sortOption}]=${
 					sortOrder ? "asc" : "desc"
 				}&${includedTags}&includedTagsMode=AND&excludedTagsMode=OR`;
-				console.log("Fetching manga with URL:", url);
 
 				const response = await axios.get(url);
 				setMangaList(response.data.data);
@@ -261,7 +260,6 @@ const ExploreScreen = ({ navigation }) => {
 			? `https://uploads.mangadex.org/covers/${item.id}/${coverArt.attributes.fileName}`
 			: null;
 
-		console.log(item.attributes.title);
 		return (
 			<TouchableOpacity
 				onPress={() => navigation.navigate("MangaDetails", { manga: item })}
