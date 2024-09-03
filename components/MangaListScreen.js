@@ -199,7 +199,8 @@ const MangaListScreen = () => {
 			<View style={styles.secc2}>
 				<FlatList
 					data={mangaListNew}
-					renderItem={renderItemVertical}
+					horizontal
+					renderItem={renderItemHorizontal}
 					keyExtractor={(item) => item.id}
 					contentContainerStyle={{ paddingHorizontal: 10 }}
 				/>

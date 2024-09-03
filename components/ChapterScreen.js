@@ -14,7 +14,7 @@ const windowWidth = Dimensions.get("window").width;
 
 const ChapterScreen = () => {
 	const route = useRoute();
-	const { chapter } = route.params; // Get chapter ID from navigation parameters
+	const { chapter } = route.params;
 	const chapterId = chapter.id;
 
 	const [pages, setPages] = useState([]);
@@ -30,9 +30,11 @@ const ChapterScreen = () => {
 				const baseUrl = response.data.baseUrl;
 				const chapterData = response.data.chapter;
 
-				const imageUrls = chapterData.data.map(
-					(fileName) => `${baseUrl}/data/${chapterData.hash}/${fileName}`
-				);
+				const imageUrls = chapterData.data.map((fileName) => ({
+					uri: `${baseUrl}/data/${chapterData.hash}/${fileName}`,
+					width: windowWidth,
+					height: windowWidth, // Initial height, will be updated later
+				}));
 
 				setPages(imageUrls);
 			} catch (error) {
@@ -45,28 +47,26 @@ const ChapterScreen = () => {
 		fetchChapterPages();
 	}, [chapterId]);
 
-	// Function to handle image loading and update dimensions
 	const onImageLoad = (width, height, index) => {
 		setPages((prevPages) =>
 			prevPages.map((item, i) =>
-				i === index ? { uri: item, width, height } : item
+				i === index ? { ...item, width, height } : item
 			)
 		);
 	};
 
 	const renderItem = ({ item, index }) => {
-		const imageSource = item.uri || item;
 		const imageStyle = {
 			width: windowWidth,
 			marginTop: 10,
-			height: windowWidth * (item.height / item.width) || windowWidth, // Dynamically adjust height
+			height: item.height ? item.height : windowWidth, // Dynamically adjust height
 		};
 
 		return (
 			<Image
-				source={{ uri: imageSource }}
+				key={index.toString()}
+				source={{ uri: item.uri }}
 				style={imageStyle}
-				resizeMode="contain"
 				onLoad={({ nativeEvent: { source } }) =>
 					onImageLoad(source.width, source.height, index)
 				}

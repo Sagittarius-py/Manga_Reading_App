@@ -76,7 +76,6 @@ const BottomTabNavigator = () => {
 const App = () => (
 	<>
 		<StatusBar hidden />
-
 		<ThemeProvider>
 			<NavigationContainer>
 				<Stack.Navigator

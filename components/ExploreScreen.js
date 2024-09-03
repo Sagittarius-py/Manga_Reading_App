@@ -107,12 +107,13 @@ const ExploreScreen = ({ navigation }) => {
 			margin: 5,
 			backgroundColor: currentTheme.cardBackground,
 			borderRadius: 8,
-			overflow: "hidden",
+			overflowX: "hidden",
 			width: "30%",
 		},
 		coverImage: {
-			width: "100%",
 			height: 150,
+			borderTopRightRadius: 8,
+			borderTopLeftRadius: 8,
 		},
 		textContainer: {
 			padding: 10,
@@ -260,6 +261,7 @@ const ExploreScreen = ({ navigation }) => {
 			? `https://uploads.mangadex.org/covers/${item.id}/${coverArt.attributes.fileName}`
 			: null;
 
+		console.log(item.attributes.title);
 		return (
 			<TouchableOpacity
 				onPress={() => navigation.navigate("MangaDetails", { manga: item })}
@@ -270,7 +272,7 @@ const ExploreScreen = ({ navigation }) => {
 				)}
 				<View style={styles.textContainer}>
 					<Text numberOfLines={1} style={styles.title}>
-						{item.attributes.title.en}
+						{item.attributes.title.en || item.attributes.title["ja-ro"]}
 					</Text>
 				</View>
 			</TouchableOpacity>
@@ -352,7 +354,7 @@ const ExploreScreen = ({ navigation }) => {
 					style={styles.navButton}
 					onPress={() => loadMoreManga()}
 				>
-					<Text style={styles.navButtonText}>Prev Page</Text>
+					<Text style={styles.navButtonText}>Next Page</Text>
 				</TouchableOpacity>
 			</View>
 		</View>

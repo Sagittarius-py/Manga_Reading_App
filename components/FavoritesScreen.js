@@ -42,7 +42,7 @@ const FavoritesScreen = () => {
 			marginBottom: 15,
 			backgroundColor: currentTheme.cardBackground,
 			borderRadius: 5,
-			overflow: "hidden",
+			overflowX: "hidden",
 		},
 		coverImage: {
 			width: 100,

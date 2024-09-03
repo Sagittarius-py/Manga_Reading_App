@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "manga_reader",
+    "name": "MangaReader",
     "slug": "manga_reader",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -26,8 +26,14 @@
     },
     "extra": {
       "eas": {
-        "projectId": "6a4ac443-a48b-4e35-a3f4-ec5aabc04246"
+        "projectId": "eec98f15-78e6-46dd-a0cc-dcc3757c3158"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/eec98f15-78e6-46dd-a0cc-dcc3757c3158"
     }
   }
 }
