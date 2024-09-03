@@ -29,7 +29,7 @@ const ExploreScreen = ({ navigation }) => {
 	const [showTags, setShowTags] = useState(false);
 	const [offset, setOffset] = useState(0);
 
-	const limit = 33; // Number of manga per page
+	const limit = 15; // Number of manga per page
 
 	const styles = StyleSheet.create({
 		button: {
@@ -97,6 +97,7 @@ const ExploreScreen = ({ navigation }) => {
 			marginVertical: 10,
 			flexDirection: "row",
 			justifyContent: "center",
+			alignItems: "center",
 		},
 		buttonText: {
 			fontSize: 16,
@@ -314,6 +315,7 @@ const ExploreScreen = ({ navigation }) => {
 									label="New Chapters"
 									value="latestUploadedChapter"
 								/>
+								<Picker.Item label="New Relese" value="createdAt" />
 
 								{/* Add more sort options as needed */}
 							</Picker>
@@ -347,7 +349,7 @@ const ExploreScreen = ({ navigation }) => {
 				>
 					<Text style={styles.navButtonText}>Prev Page</Text>
 				</TouchableOpacity>
-				<Text style={styles.navPage}>{offset / 33 + 1}</Text>
+				<Text style={styles.navPage}>{offset / 15 + 1}</Text>
 				<TouchableOpacity
 					style={styles.navButton}
 					onPress={() => loadMoreManga()}

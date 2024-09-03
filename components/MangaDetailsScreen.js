@@ -153,10 +153,10 @@ const MangaDetailsScreen = () => {
 				`https://api.mangadex.org/manga/${manga.id}/feed`,
 				{
 					params: {
-						translatedLanguage: ["en", "pl"],
+						translatedLanguage: ["en", "pl", "ja"],
 						limit: 40,
 						offset: (page - 1) * 40,
-						order: { chapter: "asc" },
+						order: { chapter: "desc" },
 					},
 				}
 			);
@@ -205,20 +205,28 @@ const MangaDetailsScreen = () => {
 		? `https://uploads.mangadex.org/covers/${manga.id}/${coverArt.attributes.fileName}`
 		: "https://via.placeholder.com/100x150?text=No+Image";
 
-	const renderItem = ({ item }) => (
-		<TouchableOpacity
-			style={styles.chapterItem}
-			onPress={() => navigation.navigate("ChapterScreen", { chapter: item })}
-		>
-			<Text style={styles.chapterTitle}>
-				Chapter {item.attributes.chapter}: {item.attributes.title || "No Title"}
-			</Text>
-			<Text style={styles.chapterDate}>
-				Published: {new Date(item.attributes.publishAt).toDateString()}
-			</Text>
-			<Text style={styles.year}>Pages: {item.attributes.pages}</Text>
-		</TouchableOpacity>
-	);
+	const renderItem = ({ item }) => {
+		if (item.attributes.pages > 0) {
+			return (
+				<TouchableOpacity
+					style={styles.chapterItem}
+					onPress={() =>
+						navigation.navigate("ChapterScreen", { chapter: item })
+					}
+				>
+					<Text style={styles.chapterTitle}>
+						Chapter {item.attributes.chapter} {item.attributes.title || ""}
+					</Text>
+					<Text style={styles.chapterDate}>
+						Published: {new Date(item.attributes.publishAt).toDateString()}
+					</Text>
+					<Text style={styles.year}>Pages: {item.attributes.pages}</Text>
+				</TouchableOpacity>
+			);
+		} else {
+			return null;
+		}
+	};
 
 	const ListHeaderComponent = () => (
 		<View style={styles.detailsContainer}>

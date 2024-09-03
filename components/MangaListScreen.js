@@ -18,6 +18,7 @@ const MangaListScreen = () => {
 	const { colors, currentTheme } = useContext(ThemeContext);
 	const [mangaListPopular, setMangaListPopular] = useState([]);
 	const [mangaListNew, setMangaListNew] = useState([]);
+	const [mangaListNewChapter, setMangaListNewChapter] = useState([]);
 	const navigation = useNavigation();
 	const scrollX = new Animated.Value(0);
 
@@ -118,8 +119,18 @@ const MangaListScreen = () => {
 			endpoint: "https://api.mangadex.org/manga",
 			setter: setMangaListNew,
 			params: {
-				limit: 5,
+				limit: 10,
 				order: { createdAt: "desc" },
+				includes: ["cover_art"],
+			},
+		});
+
+		fetchMangaData({
+			endpoint: "https://api.mangadex.org/manga",
+			setter: setMangaListNewChapter,
+			params: {
+				limit: 10,
+				order: { latestUploadedChapter: "desc" },
 				includes: ["cover_art"],
 			},
 		});
@@ -167,11 +178,11 @@ const MangaListScreen = () => {
 
 	return (
 		<ScrollView style={styles.container}>
+
 			<View style={styles.cont}>
 				<Text numberOfLines={1} style={styles.redirect}>
 					Most Popular
 				</Text>
-				<Icon name="arrow-forward" size={20} style={styles.icon} />
 			</View>
 
 			<FlatList
@@ -194,7 +205,6 @@ const MangaListScreen = () => {
 				<Text numberOfLines={1} style={styles.redirect}>
 					New Releases
 				</Text>
-				<Icon name="arrow-forward" size={20} style={styles.icon} />
 			</View>
 			<View style={styles.secc2}>
 				<FlatList
@@ -205,6 +215,23 @@ const MangaListScreen = () => {
 					contentContainerStyle={{ paddingHorizontal: 10 }}
 				/>
 			</View>
+			<View style={styles.divider} />
+
+			<View style={styles.cont}>
+				<Text numberOfLines={1} style={styles.redirect}>
+					New Chapter Uploaded
+				</Text>
+			</View>
+			<View style={styles.secc2}>
+				<FlatList
+					data={mangaListNewChapter}
+					horizontal
+					renderItem={renderItemHorizontal}
+					keyExtractor={(item) => item.id}
+					contentContainerStyle={{ paddingHorizontal: 10 }}
+				/>
+			</View>
+
 			<View style={styles.divider} />
 		</ScrollView>
 	);
