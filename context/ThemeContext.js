@@ -29,6 +29,21 @@ export const ThemeProvider = ({ children }) => {
 		accent: "#FF5733", // Default accent color
 	});
 	const [adultContentEnabled, setAdultContentEnabled] = useState(false);
+	const [selectedLanguages, setSelectedLanguages] = useState([]); // Store selected languages
+	const availableLanguages = [
+		"en",
+		"pl",
+		"ja",
+		"de",
+		"es",
+		"zh",
+		"ko",
+		"fr",
+		"pt-br",
+		"it",
+		"es-la",
+		"ru",
+	]; // Available languages
 
 	useEffect(() => {
 		const loadSettings = async () => {
@@ -38,11 +53,13 @@ export const ThemeProvider = ({ children }) => {
 				const storedAdultContent = await AsyncStorage.getItem(
 					"adultContentEnabled"
 				);
+				const storedLanguages = await AsyncStorage.getItem("selectedLanguages");
 
 				if (storedTheme) setTheme(storedTheme);
 				if (storedColors) setColors(JSON.parse(storedColors));
 				if (storedAdultContent !== null)
 					setAdultContentEnabled(JSON.parse(storedAdultContent));
+				if (storedLanguages) setSelectedLanguages(JSON.parse(storedLanguages));
 			} catch (error) {
 				console.error("Failed to load settings:", error);
 			}
@@ -51,13 +68,17 @@ export const ThemeProvider = ({ children }) => {
 		loadSettings();
 	}, []);
 
-	const saveSettings = async (newTheme, newColors, adultContent) => {
+	const saveSettings = async (newTheme, newColors, adultContent, languages) => {
 		try {
 			await AsyncStorage.setItem("theme", newTheme);
 			await AsyncStorage.setItem("colors", JSON.stringify(newColors));
 			await AsyncStorage.setItem(
 				"adultContentEnabled",
 				JSON.stringify(adultContent)
+			);
+			await AsyncStorage.setItem(
+				"selectedLanguages",
+				JSON.stringify(languages)
 			);
 		} catch (error) {
 			console.error("Failed to save settings:", error);
@@ -66,18 +87,26 @@ export const ThemeProvider = ({ children }) => {
 
 	const toggleTheme = (newTheme) => {
 		setTheme(newTheme);
-		saveSettings(newTheme, colors, adultContentEnabled);
+		saveSettings(newTheme, colors, adultContentEnabled, selectedLanguages);
 	};
 
 	const updateColors = (newColors) => {
 		setColors(newColors);
-		saveSettings(theme, newColors, adultContentEnabled);
+		saveSettings(theme, newColors, adultContentEnabled, selectedLanguages);
 	};
 
 	const toggleAdultContent = () => {
 		const newAdultContentEnabled = !adultContentEnabled;
 		setAdultContentEnabled(newAdultContentEnabled);
-		saveSettings(theme, colors, newAdultContentEnabled);
+		saveSettings(theme, colors, newAdultContentEnabled, selectedLanguages);
+	};
+
+	const toggleLanguageSelection = (lang) => {
+		const newLanguages = selectedLanguages.includes(lang)
+			? selectedLanguages.filter((l) => l !== lang)
+			: [...selectedLanguages, lang];
+		setSelectedLanguages(newLanguages);
+		saveSettings(theme, colors, adultContentEnabled, newLanguages);
 	};
 
 	const value = {
@@ -88,6 +117,9 @@ export const ThemeProvider = ({ children }) => {
 		currentTheme: themes[theme],
 		adultContentEnabled,
 		toggleAdultContent,
+		selectedLanguages,
+		toggleLanguageSelection,
+		availableLanguages, // Pass the available languages
 	};
 
 	return (

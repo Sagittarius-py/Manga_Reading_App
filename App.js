@@ -65,9 +65,9 @@ const BottomTabNavigator = () => {
 			})}
 		>
 			<Tab.Screen name="Explore" component={ExploreScreen} />
-			<Tab.Screen name="Favs" component={FavoritesScreen} />
-			<Tab.Screen name="Home" component={MangaListScreen} />
 			<Tab.Screen name="Search" component={SearchScreen} />
+			<Tab.Screen name="Home" component={MangaListScreen} />
+			<Tab.Screen name="Favs" component={FavoritesScreen} />
 			<Tab.Screen name="Settings" component={SettingsScreen} />
 		</Tab.Navigator>
 	);

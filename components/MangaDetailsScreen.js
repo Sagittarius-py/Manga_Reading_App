@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import axios from "axios";
 import {
-	ScrollView,
 	View,
 	Text,
 	Image,
@@ -17,11 +16,13 @@ import {
 	removeFavorite,
 	isFavorite,
 } from "../utils/favoritesStorage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ThemeContext } from "../context/ThemeContext";
 
 const MangaDetailsScreen = () => {
 	const scrollRef = useRef();
-	const { theme, colors, currentTheme } = useContext(ThemeContext);
+	const { theme, colors, currentTheme, selectedLanguages } =
+		useContext(ThemeContext);
 	const navigation = useNavigation();
 	const route = useRoute();
 	const { manga } = route.params;
@@ -30,6 +31,8 @@ const MangaDetailsScreen = () => {
 	const [page, setPage] = useState(1);
 	const [hasMore, setHasMore] = useState(true);
 	const [isFav, setIsFav] = useState(false);
+	const [lastReadChapter, setLastReadChapter] = useState(null);
+	const [readChapters, setReadChapters] = useState([]); // To store read chapters
 
 	const styles = StyleSheet.create({
 		container: {
@@ -55,7 +58,7 @@ const MangaDetailsScreen = () => {
 			color: currentTheme.text,
 		},
 		year: {
-			fontSize: 16,
+			fontSize: 14,
 			color: currentTheme.text2,
 			marginVertical: 5,
 		},
@@ -78,8 +81,13 @@ const MangaDetailsScreen = () => {
 			color: currentTheme.text,
 			fontSize: 16,
 		},
-		chapterDate: {
+		chapterTitleRead: {
+			color: currentTheme.text2,
 			fontSize: 14,
+			fontStyle: "italic",
+		},
+		chapterDate: {
+			fontSize: 12,
 			color: currentTheme.text2,
 		},
 		favoriteButton: {
@@ -133,6 +141,24 @@ const MangaDetailsScreen = () => {
 			paddingHorizontal: 14,
 			borderRadius: 4,
 		},
+		lastReadContainer: {
+			marginVertical: 10,
+			alignItems: "center",
+		},
+		lastReadText: {
+			fontSize: 16,
+			color: currentTheme.text,
+		},
+		continueButton: {
+			marginTop: 10,
+			padding: 10,
+			backgroundColor: colors.accent,
+			borderRadius: 5,
+		},
+		continueButtonText: {
+			color: "#fff",
+			fontSize: 16,
+		},
 	});
 
 	const scrollToTop = () => {
@@ -153,7 +179,7 @@ const MangaDetailsScreen = () => {
 				`https://api.mangadex.org/manga/${manga.id}/feed`,
 				{
 					params: {
-						translatedLanguage: ["en", "pl", "ja"],
+						translatedLanguage: selectedLanguages,
 						limit: 40,
 						offset: (page - 1) * 40,
 						order: { chapter: "desc" },
@@ -168,7 +194,7 @@ const MangaDetailsScreen = () => {
 
 			setChapterList(filteredChapters);
 
-			// If fewer than 20 chapters were returned, no more pages are available
+			// If fewer than 40 chapters were returned, no more pages are available
 			if (filteredChapters.length < 40) {
 				setHasMore(false);
 			} else {
@@ -182,6 +208,8 @@ const MangaDetailsScreen = () => {
 	useEffect(() => {
 		fetchMangaData();
 		checkIfFavorite();
+		loadLastReadChapter(); // Load last read chapter on component mount
+		loadReadChapters(); // Load read chapters on component mount
 	}, [page]);
 
 	const checkIfFavorite = async () => {
@@ -205,16 +233,84 @@ const MangaDetailsScreen = () => {
 		? `https://uploads.mangadex.org/covers/${manga.id}/${coverArt.attributes.fileName}`
 		: "https://via.placeholder.com/100x150?text=No+Image";
 
+	// Save the last-read chapter to AsyncStorage
+	const saveLastReadChapter = async (chapter) => {
+		try {
+			await AsyncStorage.setItem(
+				`lastReadChapter_${manga.id}`,
+				JSON.stringify(chapter)
+			);
+			setLastReadChapter(chapter); // Update state
+			await markChapterAsRead(chapter.id); // Mark this chapter as read
+		} catch (error) {
+			console.error("Error saving last read chapter:", error);
+		}
+	};
+
+	// Load the last-read chapter from AsyncStorage
+	const loadLastReadChapter = async () => {
+		try {
+			const storedChapter = await AsyncStorage.getItem(
+				`lastReadChapter_${manga.id}`
+			);
+			if (storedChapter) {
+				setLastReadChapter(JSON.parse(storedChapter));
+			}
+		} catch (error) {
+			console.error("Error loading last read chapter:", error);
+		}
+	};
+
+	// Load the read chapters from AsyncStorage
+	const loadReadChapters = async () => {
+		try {
+			const storedReadChapters = await AsyncStorage.getItem(
+				`readChapters_${manga.id}`
+			);
+			if (storedReadChapters) {
+				setReadChapters(JSON.parse(storedReadChapters));
+			}
+		} catch (error) {
+			console.error("Error loading read chapters:", error);
+		}
+	};
+
+	// Mark a chapter as read by adding it to the readChapters array and saving to AsyncStorage
+	const markChapterAsRead = async (chapterId) => {
+		try {
+			const updatedReadChapters = [...readChapters, chapterId];
+			setReadChapters(updatedReadChapters);
+			await AsyncStorage.setItem(
+				`readChapters_${manga.id}`,
+				JSON.stringify(updatedReadChapters)
+			);
+		} catch (error) {
+			console.error("Error marking chapter as read:", error);
+		}
+	};
+
+	// Check if a chapter is already read
+	const isChapterRead = (chapterId) => {
+		return readChapters.includes(chapterId);
+	};
+
 	const renderItem = ({ item }) => {
 		if (item.attributes.pages > 0) {
 			return (
 				<TouchableOpacity
 					style={styles.chapterItem}
-					onPress={() =>
-						navigation.navigate("ChapterScreen", { chapter: item })
-					}
+					onPress={() => {
+						saveLastReadChapter(item);
+						navigation.navigate("ChapterScreen", { chapter: item });
+					}}
 				>
-					<Text style={styles.chapterTitle}>
+					<Text
+						style={
+							isChapterRead(item.id)
+								? styles.chapterTitleRead
+								: styles.chapterTitle
+						}
+					>
 						Chapter {item.attributes.chapter} {item.attributes.title || ""}
 					</Text>
 					<Text style={styles.chapterDate}>
@@ -246,6 +342,26 @@ const MangaDetailsScreen = () => {
 				</Text>
 			</TouchableOpacity>
 			<Text style={styles.chaptersTitle}>Chapters:</Text>
+
+			{/* Display last read chapter with a "Continue" button */}
+			{lastReadChapter && (
+				<View style={styles.lastReadContainer}>
+					<Text style={styles.lastReadText}>
+						Last Read: Chapter {lastReadChapter.attributes.chapter}{" "}
+						{lastReadChapter.attributes.title || ""}
+					</Text>
+					<TouchableOpacity
+						style={styles.continueButton}
+						onPress={() => {
+							navigation.navigate("ChapterScreen", {
+								chapter: lastReadChapter,
+							});
+						}}
+					>
+						<Text style={styles.continueButtonText}>Continue Reading</Text>
+					</TouchableOpacity>
+				</View>
+			)}
 		</View>
 	);
 

@@ -11,6 +11,9 @@ const SettingsScreen = () => {
 		currentTheme,
 		adultContentEnabled,
 		toggleAdultContent,
+		selectedLanguages,
+		toggleLanguageSelection,
+		availableLanguages, // Access available languages from context
 	} = useContext(ThemeContext);
 
 	const accentColors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A8"]; // Define some accent colors
@@ -46,6 +49,33 @@ const SettingsScreen = () => {
 							style={[styles.colorButton, { backgroundColor: color }]}
 							onPress={() => handleAccentColorChange(color)}
 						/>
+					))}
+				</View>
+			</View>
+
+			{/* Language Selection Section */}
+			<View style={styles.section}>
+				<Text style={[styles.text, { color: currentTheme.text }]}>
+					Select Languages
+				</Text>
+				<View style={styles.languagePicker}>
+					{availableLanguages.map((lang) => (
+						<TouchableOpacity
+							key={lang}
+							style={[
+								styles.languageButton,
+								{
+									backgroundColor: selectedLanguages.includes(lang)
+										? colors.accent
+										: currentTheme.cardBackground,
+								},
+							]}
+							onPress={() => toggleLanguageSelection(lang)}
+						>
+							<Text style={{ color: currentTheme.text }}>
+								{lang.toUpperCase()}
+							</Text>
+						</TouchableOpacity>
 					))}
 				</View>
 			</View>
@@ -90,6 +120,22 @@ const styles = StyleSheet.create({
 		height: 50,
 		borderRadius: 4,
 		marginHorizontal: 8,
+	},
+	languagePicker: {
+		flexDirection: "row",
+		flexWrap: "wrap",
+		justifyContent: "flex-start",
+		alignItems: "center",
+	},
+	languageButton: {
+		width: 70,
+		paddingVertical: 10,
+		paddingHorizontal: 15,
+		borderRadius: 8,
+		margin: 4,
+		flexDirection: "row",
+		justifyContent: "center",
+		alignItems: "center",
 	},
 });
 
