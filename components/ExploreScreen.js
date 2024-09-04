@@ -140,6 +140,9 @@ const ExploreScreen = ({ navigation }) => {
 			paddingHorizontal: 8,
 			borderRadius: 4,
 			marginBottom: 0,
+			flexDirection: "row",
+			justifyContent: "center",
+			alignItems: "center",
 		},
 		navButtonText: {
 			fontSize: 20,
