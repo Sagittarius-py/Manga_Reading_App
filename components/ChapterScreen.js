@@ -19,6 +19,7 @@ const ChapterScreen = () => {
 
 	const [pages, setPages] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const [loadingImageIndices, setLoadingImageIndices] = useState(new Set());
 
 	useEffect(() => {
 		const fetchChapterPages = async () => {
@@ -53,24 +54,50 @@ const ChapterScreen = () => {
 				i === index ? { ...item, width, height } : item
 			)
 		);
+		setLoadingImageIndices((prevIndices) => {
+			const newIndices = new Set(prevIndices);
+			newIndices.delete(index);
+			return newIndices;
+		});
 	};
 
 	const renderItem = ({ item, index }) => {
 		const imageStyle = {
 			width: "100%",
 			marginTop: 10,
-			height: windowWidth * (item.height / item.width) || windowWidth, // Dynamically adjust height
+			height: item.width
+				? windowWidth * (item.height / item.width)
+				: windowWidth,
 		};
 
 		return (
-			<Image
-				key={index.toString()}
-				source={{ uri: item.uri }}
-				style={imageStyle}
-				onLoad={({ nativeEvent: { source } }) =>
-					onImageLoad(source.width, source.height, index)
-				}
-			/>
+			<View style={styles.imageContainer}>
+				{loadingImageIndices.has(index) && (
+					<ActivityIndicator
+						size="large"
+						color="#000"
+						style={styles.imageLoader}
+					/>
+				)}
+				<Image
+					key={index.toString()}
+					source={{ uri: item.uri }}
+					style={imageStyle}
+					onLoadStart={() =>
+						setLoadingImageIndices((prev) => new Set(prev).add(index))
+					}
+					onLoad={({ nativeEvent: { source } }) =>
+						onImageLoad(source.width, source.height, index)
+					}
+					onLoadEnd={() =>
+						setLoadingImageIndices((prev) => {
+							const newIndices = new Set(prev);
+							newIndices.delete(index);
+							return newIndices;
+						})
+					}
+				/>
+			</View>
 		);
 	};
 
@@ -103,6 +130,18 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 		backgroundColor: "#1c1d22",
+	},
+	imageContainer: {
+		position: "relative",
+	},
+	imageLoader: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		justifyContent: "center",
+		alignItems: "center",
 	},
 });
 

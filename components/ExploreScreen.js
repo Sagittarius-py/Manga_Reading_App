@@ -6,10 +6,9 @@ import {
 	FlatList,
 	StyleSheet,
 	StatusBar,
-	Modal,
-	Button,
 	ScrollView,
 	Image,
+	ActivityIndicator, // Import ActivityIndicator for loading spinner
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
@@ -23,11 +22,11 @@ const ExploreScreen = ({ navigation }) => {
 	const [selectedTags, setSelectedTags] = useState([]);
 	const [mangaList, setMangaList] = useState([]);
 	const [sortOption, setSortOption] = useState("rating");
-
 	const [sortOrder, setSortOrder] = useState(false);
 	const [searchText, setSearchText] = useState("");
 	const [showTags, setShowTags] = useState(false);
 	const [offset, setOffset] = useState(0);
+	const [loading, setLoading] = useState(true); // New state for loading
 
 	const limit = 15; // Number of manga per page
 
@@ -39,7 +38,7 @@ const ExploreScreen = ({ navigation }) => {
 		container: {
 			flex: 1,
 			backgroundColor: currentTheme.background,
-			padding: 16,
+			padding: 10,
 		},
 		tagGroup: {
 			padding: 4,
@@ -50,7 +49,6 @@ const ExploreScreen = ({ navigation }) => {
 			marginVertical: 10,
 			flexDirection: "row",
 		},
-
 		tagGroupTitle: {
 			fontSize: 18,
 			color: currentTheme.text,
@@ -126,9 +124,8 @@ const ExploreScreen = ({ navigation }) => {
 			color: currentTheme.text,
 			textAlign: "center",
 		},
-
 		navGroup: {
-			marginVertical: 10,
+			marginTop: 10,
 			flexDirection: "row",
 			justifyContent: "space-evenly",
 			alignItems: "center",
@@ -155,6 +152,11 @@ const ExploreScreen = ({ navigation }) => {
 			padding: 4,
 			paddingHorizontal: 14,
 			borderRadius: 4,
+		},
+		loadingContainer: {
+			flex: 1,
+			justifyContent: "center",
+			alignItems: "center",
 		},
 	});
 
@@ -184,6 +186,7 @@ const ExploreScreen = ({ navigation }) => {
 	useEffect(() => {
 		const fetchManga = async () => {
 			try {
+				setLoading(true); // Set loading to true before fetching data
 				const includedTags = selectedTags
 					.map((tag) => `includedTags[]=${tag}`)
 					.join("&");
@@ -202,6 +205,8 @@ const ExploreScreen = ({ navigation }) => {
 					"Error fetching manga:",
 					error.response ? error.response.data : error.message
 				);
+			} finally {
+				setLoading(false); // Set loading to false after fetching data
 			}
 		};
 
@@ -285,81 +290,91 @@ const ExploreScreen = ({ navigation }) => {
 		<View style={styles.container}>
 			<StatusBar barStyle="dark-content" style={styles.button} />
 
-			<TouchableOpacity
-				style={styles.button}
-				onPress={() => setShowTags(!showTags)}
-			>
-				<Text style={styles.navButtonText}>
-					{showTags ? "Hide Tags" : "Show Tags"}
-				</Text>
-			</TouchableOpacity>
-
-			{showTags && (
-				<ScrollView horizontal>
-					<View style={styles.tagGroup}>
-						<Text numberOfLines={1} style={styles.tagGroupTitle}>
-							Sort
+			{loading ? ( // Show loading indicator if loading is true
+				<View style={styles.loadingContainer}>
+					<ActivityIndicator size="large" color={colors.accent} />
+					<Text style={{ color: currentTheme.text, marginTop: 10 }}>
+						Loading...
+					</Text>
+				</View>
+			) : (
+				<>
+					<TouchableOpacity
+						style={styles.button}
+						onPress={() => setShowTags(!showTags)}
+					>
+						<Text style={styles.navButtonText}>
+							{showTags ? "Hide Tags" : "Show Tags"}
 						</Text>
-						<View style={styles.tagGroup2}>
-							<Picker
-								selectedValue={sortOption}
-								style={{
-									height: 30,
-									width: 150,
-									backgroundColor: currentTheme.bars,
-									color: currentTheme.text,
-									borderRadius: 8,
-								}}
-								onValueChange={(itemValue) => setSortOption(itemValue)}
-							>
-								<Picker.Item label="Rating" value="rating" />
-								<Picker.Item label="Follows count" value="followedCount" />
-								<Picker.Item
-									label="New Chapters"
-									value="latestUploadedChapter"
-								/>
-								<Picker.Item label="New Relese" value="createdAt" />
+					</TouchableOpacity>
 
-								{/* Add more sort options as needed */}
-							</Picker>
+					{showTags && (
+						<ScrollView horizontal>
+							<View style={styles.tagGroup}>
+								<Text numberOfLines={1} style={styles.tagGroupTitle}>
+									Sort
+								</Text>
+								<View style={styles.tagGroup2}>
+									<Picker
+										selectedValue={sortOption}
+										style={{
+											height: 30,
+											width: 150,
+											backgroundColor: currentTheme.bars,
+											color: currentTheme.text,
+											borderRadius: 8,
+										}}
+										onValueChange={(itemValue) => setSortOption(itemValue)}
+									>
+										<Picker.Item label="Rating" value="rating" />
+										<Picker.Item label="Follows count" value="followedCount" />
+										<Picker.Item
+											label="New Chapters"
+											value="latestUploadedChapter"
+										/>
+										<Picker.Item label="New Release" value="createdAt" />
+										{/* Add more sort options as needed */}
+									</Picker>
 
-							<Icon
-								name={sortOrder ? "arrow-down" : "arrow-up"}
-								size={50}
-								color={colors.accent}
-								onPress={() => setSortOrder(!sortOrder)}
-							/>
-						</View>
+									<Icon
+										name={sortOrder ? "arrow-down" : "arrow-up"}
+										size={50}
+										color={colors.accent}
+										onPress={() => setSortOrder(!sortOrder)}
+									/>
+								</View>
+							</View>
+
+							{renderTagGroups()}
+						</ScrollView>
+					)}
+
+					<FlatList
+						data={mangaList}
+						renderItem={renderMangaItem}
+						keyExtractor={(item) => item.id}
+						numColumns={3} // Change here to use three columns
+						onEndReachedThreshold={0.5}
+						columnWrapperStyle={{ justifyContent: "space-between" }} // Add spacing between columns
+					/>
+
+					<View style={styles.navGroup}>
+						<TouchableOpacity
+							style={styles.navButton}
+							onPress={() => loadLessManga()}
+						>
+							<Text style={styles.navButtonText}>Prev Page</Text>
+						</TouchableOpacity>
+						<Text style={styles.navPage}>{offset / 15 + 1}</Text>
+						<TouchableOpacity
+							style={styles.navButton}
+							onPress={() => loadMoreManga()}
+						>
+							<Text style={styles.navButtonText}>Next Page</Text>
+						</TouchableOpacity>
 					</View>
-
-					{renderTagGroups()}
-				</ScrollView>
+				</>
 			)}
-
-			<FlatList
-				data={mangaList}
-				renderItem={renderMangaItem}
-				keyExtractor={(item) => item.id}
-				numColumns={3} // Change here to use three columns
-				onEndReachedThreshold={0.5}
-				columnWrapperStyle={{ justifyContent: "space-between" }} // Add spacing between columns
-			/>
-
-			<View style={styles.navGroup}>
-				<TouchableOpacity
-					style={styles.navButton}
-					onPress={() => loadLessManga()}
-				>
-					<Text style={styles.navButtonText}>Prev Page</Text>
-				</TouchableOpacity>
-				<Text style={styles.navPage}>{offset / 15 + 1}</Text>
-				<TouchableOpacity
-					style={styles.navButton}
-					onPress={() => loadMoreManga()}
-				>
-					<Text style={styles.navButtonText}>Next Page</Text>
-				</TouchableOpacity>
-			</View>
 		</View>
 	);
 };
