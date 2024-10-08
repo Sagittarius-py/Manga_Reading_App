@@ -2,24 +2,26 @@ import React, { useState, useEffect } from "react";
 import {
 	View,
 	StyleSheet,
-	FlatList,
-	Image,
 	ActivityIndicator,
 	Dimensions,
+	Modal,
+	Text,
+	TouchableOpacity,
 } from "react-native";
 import axios from "axios";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import ImageViewer from "react-native-image-zoom-viewer";
 
 const windowWidth = Dimensions.get("window").width;
 
 const ChapterScreen = () => {
 	const route = useRoute();
+	const navigation = useNavigation(); // Navigation to allow leaving the chapter
 	const { chapter } = route.params;
 	const chapterId = chapter.id;
 
 	const [pages, setPages] = useState([]);
 	const [loading, setLoading] = useState(true);
-	const [loadingImageIndices, setLoadingImageIndices] = useState(new Set());
 
 	useEffect(() => {
 		const fetchChapterPages = async () => {
@@ -31,10 +33,10 @@ const ChapterScreen = () => {
 				const baseUrl = response.data.baseUrl;
 				const chapterData = response.data.chapter;
 
+				// Update imageUrls to follow the format ImageViewer expects
 				const imageUrls = chapterData.data.map((fileName) => ({
-					uri: `${baseUrl}/data/${chapterData.hash}/${fileName}`,
-					width: windowWidth,
-					height: windowWidth, // Initial height, will be updated later
+					url: `${baseUrl}/data/${chapterData.hash}/${fileName}`,
+					width: windowWidth, // Default width (can be adjusted later if needed)
 				}));
 
 				setPages(imageUrls);
@@ -48,57 +50,9 @@ const ChapterScreen = () => {
 		fetchChapterPages();
 	}, [chapterId]);
 
-	const onImageLoad = (width, height, index) => {
-		setPages((prevPages) =>
-			prevPages.map((item, i) =>
-				i === index ? { ...item, width, height } : item
-			)
-		);
-		setLoadingImageIndices((prevIndices) => {
-			const newIndices = new Set(prevIndices);
-			newIndices.delete(index);
-			return newIndices;
-		});
-	};
-
-	const renderItem = ({ item, index }) => {
-		const imageStyle = {
-			width: "100%",
-			marginTop: 10,
-			height: item.width
-				? windowWidth * (item.height / item.width)
-				: windowWidth,
-		};
-
-		return (
-			<View style={styles.imageContainer}>
-				{loadingImageIndices.has(index) && (
-					<ActivityIndicator
-						size="large"
-						color="#000"
-						style={styles.imageLoader}
-					/>
-				)}
-				<Image
-					key={index.toString()}
-					source={{ uri: item.uri }}
-					style={imageStyle}
-					onLoadStart={() =>
-						setLoadingImageIndices((prev) => new Set(prev).add(index))
-					}
-					onLoad={({ nativeEvent: { source } }) =>
-						onImageLoad(source.width, source.height, index)
-					}
-					onLoadEnd={() =>
-						setLoadingImageIndices((prev) => {
-							const newIndices = new Set(prev);
-							newIndices.delete(index);
-							return newIndices;
-						})
-					}
-				/>
-			</View>
-		);
+	// Function to navigate back/leave the chapter
+	const leaveChapter = () => {
+		navigation.goBack(); // This will navigate back to the previous screen
 	};
 
 	if (loading) {
@@ -110,38 +64,45 @@ const ChapterScreen = () => {
 	}
 
 	return (
-		<FlatList
-			data={pages}
-			renderItem={renderItem}
-			keyExtractor={(item, index) => index.toString()}
-			contentContainerStyle={styles.container}
-		/>
+		<Modal visible={true} transparent={true}>
+			<ImageViewer
+				imageUrls={pages} // Ensure the format is correct for ImageViewer
+				enableSwipeDown={true} // Allow swipe down to close
+				backgroundColor="#1c1d22"
+			/>
+
+			{/* Bottom Navigation Bar */}
+			<View style={styles.bottomNavBar}>
+				<TouchableOpacity style={styles.navButton} onPress={leaveChapter}>
+					<Text style={styles.navButtonText}>Leave Chapter</Text>
+				</TouchableOpacity>
+			</View>
+		</Modal>
 	);
 };
 
 const styles = StyleSheet.create({
-	container: {
-		backgroundColor: "#1c1d22",
-		paddingVertical: 10,
-		flexDirection: "column",
-	},
 	loadingContainer: {
 		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
 		backgroundColor: "#1c1d22",
 	},
-	imageContainer: {
-		position: "relative",
-	},
-	imageLoader: {
+	bottomNavBar: {
 		position: "absolute",
-		top: 0,
-		left: 0,
-		right: 0,
 		bottom: 0,
-		justifyContent: "center",
-		alignItems: "center",
+		width: "100%",
+		backgroundColor: "#333", // Dark background for the navbar
+		paddingVertical: 10,
+		flexDirection: "row",
+		justifyContent: "space-around",
+	},
+	navButton: {
+		padding: 10,
+	},
+	navButtonText: {
+		color: "#fff", // White text for better visibility
+		fontSize: 16,
 	},
 });
 

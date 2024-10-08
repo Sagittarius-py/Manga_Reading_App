@@ -4,6 +4,7 @@ import {
 	Text,
 	TouchableOpacity,
 	FlatList,
+	TextInput,
 	StyleSheet,
 	StatusBar,
 	ScrollView,
@@ -19,6 +20,7 @@ const ExploreScreen = ({ navigation }) => {
 	const { theme, colors, currentTheme, adultContentEnabled } =
 		useContext(ThemeContext);
 	const [tags, setTags] = useState([]);
+	const [query, setQuery] = useState("");
 	const [selectedTags, setSelectedTags] = useState([]);
 	const [mangaList, setMangaList] = useState([]);
 	const [sortOption, setSortOption] = useState("rating");
@@ -53,6 +55,7 @@ const ExploreScreen = ({ navigation }) => {
 			fontSize: 18,
 			color: currentTheme.text,
 			marginBottom: 10,
+			textTransform: "capitalize",
 		},
 		tagItem: {
 			padding: 10,
@@ -100,6 +103,15 @@ const ExploreScreen = ({ navigation }) => {
 		buttonText: {
 			fontSize: 16,
 			color: currentTheme.text,
+		},
+		input: {
+			height: 40,
+
+			width: "90%",
+			backgroundColor: currentTheme.cardBackground,
+			paddingHorizontal: 10,
+			color: currentTheme.text,
+			marginBottom: 20,
 		},
 		itemContainer: {
 			flexDirection: "column",
@@ -160,56 +172,57 @@ const ExploreScreen = ({ navigation }) => {
 		},
 	});
 
+	const fetchTags = async () => {
+		try {
+			const response = await axios.get("https://api.mangadex.org/manga/tag");
+			const groupedTags = response.data.data.reduce((groups, tag) => {
+				const group = tag.attributes.group || "Other";
+				if (!groups[group]) {
+					groups[group] = [];
+				}
+				groups[group].push(tag);
+				return groups;
+			}, {});
+			setTags(groupedTags);
+		} catch (error) {
+			console.error("Error fetching tags:", error);
+		}
+	};
+
+	const fetchManga = async () => {
+		try {
+			setLoading(true); // Set loading to true before fetching data
+			const includedTags = selectedTags
+				.map((tag) => `includedTags[]=${tag}`)
+				.join("&");
+			const url = `https://api.mangadex.org/manga
+				${query ? `?title=${encodeURIComponent(query)}&` : "?"}
+			limit=${limit}&offset=${offset}&includes[]=cover_art${
+				!adultContentEnabled
+					? "&contentRating[]=safe&contentRating[]=suggestive"
+					: "&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica"
+			}&order[${sortOption}]=${
+				sortOrder ? "asc" : "desc"
+			}&${includedTags}&includedTagsMode=AND&excludedTagsMode=OR`;
+
+			const response = await axios.get(url);
+			setMangaList(response.data.data);
+		} catch (error) {
+			console.error(
+				"Error fetching manga:",
+				error.response ? error.response.data : error.message
+			);
+		} finally {
+			setLoading(false); // Set loading to false after fetching data
+		}
+	};
 	// Fetch Tags with Grouping
 	useEffect(() => {
-		const fetchTags = async () => {
-			try {
-				const response = await axios.get("https://api.mangadex.org/manga/tag");
-				const groupedTags = response.data.data.reduce((groups, tag) => {
-					const group = tag.attributes.group || "Other";
-					if (!groups[group]) {
-						groups[group] = [];
-					}
-					groups[group].push(tag);
-					return groups;
-				}, {});
-				setTags(groupedTags);
-			} catch (error) {
-				console.error("Error fetching tags:", error);
-			}
-		};
-
 		fetchTags();
 	}, []);
 
 	// Fetch Manga based on selected tags and pagination
 	useEffect(() => {
-		const fetchManga = async () => {
-			try {
-				setLoading(true); // Set loading to true before fetching data
-				const includedTags = selectedTags
-					.map((tag) => `includedTags[]=${tag}`)
-					.join("&");
-				const url = `https://api.mangadex.org/manga?limit=${limit}&offset=${offset}&includes[]=cover_art${
-					!adultContentEnabled
-						? "&contentRating[]=safe&contentRating[]=suggestive"
-						: "&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica"
-				}&order[${sortOption}]=${
-					sortOrder ? "asc" : "desc"
-				}&${includedTags}&includedTagsMode=AND&excludedTagsMode=OR`;
-
-				const response = await axios.get(url);
-				setMangaList(response.data.data);
-			} catch (error) {
-				console.error(
-					"Error fetching manga:",
-					error.response ? error.response.data : error.message
-				);
-			} finally {
-				setLoading(false); // Set loading to false after fetching data
-			}
-		};
-
 		fetchManga();
 	}, [selectedTags, sortOption, sortOrder, offset]);
 
@@ -311,6 +324,17 @@ const ExploreScreen = ({ navigation }) => {
 					{showTags && (
 						<ScrollView horizontal>
 							<View style={styles.tagGroup}>
+								<Text numberOfLines={1} style={styles.tagGroupTitle}>
+									Search
+								</Text>
+								<TextInput
+									style={styles.input}
+									placeholder="Search manga..."
+									placeholderTextColor={currentTheme.text}
+									value={query}
+									onChangeText={setQuery}
+									onSubmitEditing={fetchManga}
+								/>
 								<Text numberOfLines={1} style={styles.tagGroupTitle}>
 									Sort
 								</Text>

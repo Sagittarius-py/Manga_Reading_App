@@ -12,7 +12,6 @@ import MangaListScreen from "./components/MangaListScreen";
 import MangaDetailsScreen from "./components/MangaDetailsScreen";
 import SettingsScreen from "./components/SettingsScreen";
 import ChapterScreen from "./components/ChapterScreen";
-import SearchScreen from "./components/SearchScreen";
 import FavoritesScreen from "./components/FavoritesScreen";
 import ExploreScreen from "./components/ExploreScreen";
 
@@ -66,7 +65,7 @@ const BottomTabNavigator = () => {
 			})}
 		>
 			<Tab.Screen name="Explore" component={ExploreScreen} />
-			<Tab.Screen name="Search" component={SearchScreen} />
+
 			<Tab.Screen name="Home" component={MangaListScreen} />
 			<Tab.Screen name="Favs" component={FavoritesScreen} />
 			<Tab.Screen name="Settings" component={SettingsScreen} />
@@ -76,7 +75,7 @@ const BottomTabNavigator = () => {
 
 const App = () => (
 	<>
-		<StatusBar hidden />
+		<StatusBar />
 		<ThemeProvider>
 			<NavigationContainer>
 				<Stack.Navigator
@@ -88,7 +87,7 @@ const App = () => (
 					<Stack.Screen name="MangaDetails" component={MangaDetailsScreen} />
 					<Stack.Screen name="Settings" component={SettingsScreen} />
 					<Stack.Screen name="ChapterScreen" component={ChapterScreen} />
-					<Stack.Screen name="Search" component={SearchScreen} />
+
 					<Stack.Screen name="Favs" component={FavoritesScreen} />
 					<Stack.Screen name="Explore" component={ExploreScreen} />
 				</Stack.Navigator>
