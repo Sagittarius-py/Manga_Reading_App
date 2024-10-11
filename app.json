@@ -1,0 +1,39 @@
+{
+	"expo": {
+		"name": "MangaReader",
+		"slug": "manga_reader",
+		"version": "1.0.2",
+		"orientation": "portrait",
+		"icon": "./assets/icon.png",
+		"userInterfaceStyle": "light",
+		"splash": {
+			"image": "./assets/splash.png",
+			"resizeMode": "contain",
+			"backgroundColor": "#010510"
+		},
+		"ios": {
+			"supportsTablet": true
+		},
+		"android": {
+			"adaptiveIcon": {
+				"foregroundImage": "./assets/adaptive-icon.png",
+				"backgroundColor": "#010510"
+			},
+			"package": "com.sieniu2791.manga_reader"
+		},
+		"web": {
+			"favicon": "./assets/favicon.png"
+		},
+		"extra": {
+			"eas": {
+				"projectId": "eec98f15-78e6-46dd-a0cc-dcc3757c3158"
+			}
+		},
+		"runtimeVersion": {
+			"policy": "appVersion"
+		},
+		"updates": {
+			"url": "https://u.expo.dev/eec98f15-78e6-46dd-a0cc-dcc3757c3158"
+		}
+	}
+}
