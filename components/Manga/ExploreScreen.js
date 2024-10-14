@@ -30,6 +30,7 @@ const ExploreScreen = ({ navigation }) => {
 	const [offset, setOffset] = useState(0);
 	const [loading, setLoading] = useState(true); // New state for loading
 
+	// chuj
 	const limit = 15; // Number of manga per page
 
 	const styles = StyleSheet.create({
