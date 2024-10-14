@@ -45,7 +45,7 @@ const PicturesScreen = () => {
 				}
 
 				// Update the pictures state
-				setPictures((prevPictures) => [...prevPictures, ...images]);
+				setPictures(images);
 			} else {
 				setError("No images found.");
 				setHasMore(false);
@@ -62,20 +62,24 @@ const PicturesScreen = () => {
 		fetchPictures(page);
 	}, [page]);
 
-	const loadMorePictures = () => {
-		if (hasMore) {
-			setLoading(true); // Show loading indicator while fetching more
-			setPage((prevPage) => prevPage + 1); // Increment page number
+	// Handle page navigation
+	const goToNextPage = () => {
+		setPage((prevPage) => prevPage + 1);
+	};
+
+	const goToPreviousPage = () => {
+		if (page > 0) {
+			setPage((prevPage) => prevPage - 1);
 		}
 	};
 
 	const styles = StyleSheet.create({
 		containera: {
 			flex: 1,
-			backgroundColor: currentTheme.background,
+			backgroundColor: currentTheme.background, // Set background based on theme
 		},
 		list: {
-			backgroundColor: currentTheme.background,
+			backgroundColor: currentTheme.background, // Set background based on theme
 		},
 		loaderContainer: {
 			backgroundColor: currentTheme.background,
@@ -97,8 +101,10 @@ const PicturesScreen = () => {
 			borderRadius: 8, // Rounded corners for images
 			overflow: "hidden",
 		},
-		loadMoreButton: {
-			margin: 20, // Add margin for spacing
+		paginationContainer: {
+			flexDirection: "row",
+			justifyContent: "space-between",
+			padding: 20,
 		},
 	});
 
@@ -131,11 +137,20 @@ const PicturesScreen = () => {
 				imageContainerStyle={styles.imageContainer}
 				spacing={2} // Space between images
 			/>
-			{hasMore && (
-				<View style={styles.loadMoreButton}>
-					<Button title="Load More" onPress={loadMorePictures} />
-				</View>
-			)}
+
+			{/* Pagination Buttons */}
+			<View style={styles.paginationContainer}>
+				<Button
+					title="Previous"
+					onPress={goToPreviousPage}
+					disabled={page === 0} // Disable if on the first page
+				/>
+				<Button
+					title="Next"
+					onPress={goToNextPage}
+					disabled={!hasMore} // Disable if there are no more images
+				/>
+			</View>
 		</View>
 	);
 };
