@@ -161,61 +161,68 @@ const CustomDrawerContent = (props) => {
 		</DrawerContentScrollView>
 	);
 };
-
 const DrawerNavigator = () => {
 	const { currentTheme, colors } = useContext(ThemeContext);
-
 	const styles = StyleSheet.create({
 		drawerStyle: {
-			backgroundColor: currentTheme.bars, // Use currentTheme.bars for background
-			width: "60%",
-		},
-		drawerLabel: {
-			fontSize: 16,
-			color: currentTheme.text,
+			backgroundColor: currentTheme.bars,
 		},
 	});
-
 	return (
 		<Drawer.Navigator
 			drawerContent={(props) => <CustomDrawerContent {...props} />}
-			screenOptions={({ route }) => ({
-				headerShown: false,
-				drawerIcon: ({ focused, size }) => {
-					let iconName;
-
-					if (route.name === "Home") {
-						iconName = focused ? "home" : "home-outline";
-					} else if (route.name === "Favs") {
-						iconName = focused ? "heart" : "heart-outline";
-					} else if (route.name === "Explore") {
-						iconName = focused ? "compass" : "compass-outline";
-					} else if (route.name === "Pictures") {
-						iconName = focused ? "images" : "images-outline";
-					} else if (route.name === "PictureDetails") {
-						iconName = focused ? "image" : "image-outline";
-					}
-
-					return (
-						<Icon
-							name={iconName}
-							size={size}
-							color={focused ? colors.accent : currentTheme.text}
-						/>
-					);
-				},
-				drawerActiveTintColor: colors.accent, // Use colors.accent for active tint
-				drawerInactiveTintColor: colors.accent, // Use colors.accent for inactive tint
+			screenOptions={{
 				drawerStyle: styles.drawerStyle,
-				drawerLabelStyle: styles.drawerLabel,
+				drawerActiveTintColor: colors.accent,
+				headerShown: false,
+			}}
+		>
+			<Drawer.Screen name="MainStack" component={StackNavigator} />
+		</Drawer.Navigator>
+	);
+};
+
+const StackNavigator = () => {
+	const { currentTheme, colors } = useContext(ThemeContext);
+	return (
+		<Stack.Navigator
+			screenOptions={({ navigation }) => ({
+				headerLeft: () => (
+					<Icon
+						name="menu"
+						size={25}
+						color={colors.accent}
+						style={{ marginLeft: 10 }}
+						onPress={() => navigation.toggleDrawer()} // Toggle the drawer
+					/>
+				),
+				headerStyle: {
+					backgroundColor: currentTheme.background,
+				},
+				headerTintColor: currentTheme.text,
 			})}
 		>
-			<Drawer.Screen name="Explore" component={ExploreScreen} />
-			<Drawer.Screen name="Home" component={MangaListScreen} />
-			<Drawer.Screen name="Favs" component={FavoritesScreen} />
-			<Drawer.Screen name="Pictures" component={PicturesScreen} />
-			<Drawer.Screen name="PictureDetails" component={PictureDetailsScreen} />
-		</Drawer.Navigator>
+			<Stack.Screen
+				name="Home"
+				options={{
+					title: "My home",
+					headerStyle: {
+						backgroundColor: currentTheme.cardBackground,
+					},
+					headerTintColor: "#fff",
+					headerTitleStyle: {
+						fontWeight: "bold",
+					},
+				}}
+				component={MangaListScreen}
+			/>
+			<Stack.Screen name="MangaDetails" component={MangaDetailsScreen} />
+			<Stack.Screen name="ChapterScreen" component={ChapterScreen} />
+			<Stack.Screen name="Favs" component={FavoritesScreen} />
+			<Stack.Screen name="Explore" component={ExploreScreen} />
+			<Stack.Screen name="Pictures" component={PicturesScreen} />
+			<Stack.Screen name="PictureDetails" component={PictureDetailsScreen} />
+		</Stack.Navigator>
 	);
 };
 
@@ -235,22 +242,10 @@ const styles = StyleSheet.create({
 
 const App = () => (
 	<>
-		<StatusBar />
+		<StatusBar hidden />
 		<ThemeProvider>
 			<NavigationContainer>
-				<Stack.Navigator screenOptions={{ headerShown: false }}>
-					<Stack.Screen name="Drawer" component={DrawerNavigator} />
-					<Stack.Screen name="MangaDetails" component={MangaDetailsScreen} />
-					<Stack.Screen name="Settings" component={SettingsScreen} />
-					<Stack.Screen name="ChapterScreen" component={ChapterScreen} />
-					<Stack.Screen name="Favs" component={FavoritesScreen} />
-					<Stack.Screen name="Explore" component={ExploreScreen} />
-					<Stack.Screen name="Pictures" component={PicturesScreen} />
-					<Stack.Screen
-						name="PictureDetails"
-						component={PictureDetailsScreen}
-					/>
-				</Stack.Navigator>
+				<DrawerNavigator />
 			</NavigationContainer>
 		</ThemeProvider>
 	</>
