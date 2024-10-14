@@ -15,9 +15,9 @@ import {
 	addFavorite,
 	removeFavorite,
 	isFavorite,
-} from "../utils/favoritesStorage";
+} from "../../utils/favoritesStorage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ThemeContext } from "../context/ThemeContext";
+import { ThemeContext } from "../../context/ThemeContext";
 
 const MangaDetailsScreen = () => {
 	const scrollRef = useRef();

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
-import { ThemeContext } from "../context/ThemeContext";
+import { ThemeContext } from "../../context/ThemeContext";
 import Icon from "react-native-vector-icons/Ionicons";
 
 const MangaListScreen = () => {
@@ -178,7 +178,6 @@ const MangaListScreen = () => {
 
 	return (
 		<ScrollView style={styles.container}>
-
 			<View style={styles.cont}>
 				<Text numberOfLines={1} style={styles.redirect}>
 					Most Popular

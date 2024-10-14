@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const themes = {
 	light: {
-		background: "#ffffff",
+		background: "#ff0000",
 		bars: "#e0e0e0",
 		text: "#18181b",
 		text2: "#282828",

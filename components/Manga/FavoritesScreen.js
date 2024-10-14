@@ -8,8 +8,8 @@ import {
 	Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { getFavorites } from "../utils/favoritesStorage";
-import { ThemeContext } from "../context/ThemeContext";
+import { getFavorites } from "../../utils/favoritesStorage";
+import { ThemeContext } from "../../context/ThemeContext";
 
 const FavoritesScreen = () => {
 	const { colors, currentTheme } = useContext(ThemeContext);

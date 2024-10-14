@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
-import { ThemeContext } from "../context/ThemeContext";
+import { ThemeContext } from "../../context/ThemeContext";
 import Icon from "react-native-vector-icons/Ionicons";
 
 const ExploreScreen = ({ navigation }) => {
